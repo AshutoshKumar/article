@@ -54,7 +54,9 @@ Dependancies
 
 ### Testing with curl
 
-##### Sample curl request to create an article
+##### Sample curl request
+
+###### Create Article Request
 ```
 curl -X POST \
   http://localhost:8001/articles \
@@ -71,18 +73,18 @@ curl -X POST \
 ```
 
 
-##### Sample response:
+###### Response:
 ```
 201 Created
 ```
 
-##### Sample curl request to get article based on passed id
+###### Get Article Request
   ```
   curl -X GET \
   http://localhost:8001/articles/1 \
   -H 'Cache-Control: no-cache'
   ```
-##### sample response
+###### Get Article Response
 ```
 {
     "id": "1",
@@ -97,14 +99,14 @@ curl -X POST \
 }
 ```
 
-##### Sample curl request to get article based on passed tag and date
+###### Get Article based on tagName and Date Request
 
 ```
 curl -X GET \
   http://localhost:8001/tags/health/20160922 \
   -H 'Cache-Control: no-cache'
   ```
-##### sample response
+###### Response:
 ```
 {
     "tag": "health",
