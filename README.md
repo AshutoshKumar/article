@@ -54,7 +54,7 @@ Dependancies
 
 ### Testing with curl
 
-  ##### Sample curl request to create an article
+##### Sample curl request to create an article
 ```
 curl -X POST \
   http://localhost:8001/articles \
@@ -67,7 +67,9 @@ curl -X POST \
     "Date": "2016-09-22",
     "Body": "some text, potentially containing simple markup about how potato chips are great",
     "Tags":["health", "fitness", "science"]
-}'```
+}'
+```
+
 
 ##### Sample response:
 ```
@@ -92,7 +94,8 @@ curl -X POST \
         "fitness",
         "science"
     ]
-}```
+}
+```
 
 ##### Sample curl request to get article based on passed tag and date
 
