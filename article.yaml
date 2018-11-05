@@ -1,6 +1,6 @@
 swagger: '2.0'
 info:
-  title: articles-v1
+  title: articles
   description: >-
    An API which allow to create an Article, with list of fields liks (title, date, body and tags)
     and we can fetch the articles  based on article ID and tags.
