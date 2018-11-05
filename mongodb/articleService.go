@@ -1,8 +1,6 @@
 package mongo
 
 import (
-	"fmt"
-
 	"github.com/article/config"
 	"github.com/article/model"
 	mgo "gopkg.in/mgo.v2"
@@ -47,6 +45,7 @@ func (p *ArticleService) GetArticleByTagName(tag string, date string) (model.Tag
 	massagedData.Tag = tag
 	massagedData.Count = count
 
+	//TODO we can move this to some util
 	for _, connect := range connects {
 		index := getIndex(connect.Tags, tag)
 		massagedData.Articles = append(massagedData.Articles, connect.ArticleId)
@@ -70,7 +69,6 @@ func RemoveDuplicatesFromSlice(s []string) []string {
 	for _, item := range s {
 		if _, ok := m[item]; ok {
 			// duplicate item
-			fmt.Println(item, "is a duplicate")
 		} else {
 			m[item] = true
 		}
