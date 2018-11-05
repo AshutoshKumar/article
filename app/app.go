@@ -102,6 +102,7 @@ func (a *App) getTagHandler(w http.ResponseWriter, r *http.Request) {
 
 	tagName := chi.URLParam(r, "tagName")
 	date := chi.URLParam(r, "date")
+	date = date[0:4] + "-" + date[4:6] + "-" + date[6:]
 	articles, err := a.articleService.GetArticleByTagName(tagName, date)
 
 	if err != nil {
@@ -147,7 +148,7 @@ func (a *App) InitializeRoutes() {
 	a.AppLogger.Infoln("adding routes...")
 
 	a.Router.HandleFunc("/articles", a.createArticle)
-	a.Router.MethodFunc("GET", "/getarticles/{id}", a.getArticlesHandler)
+	a.Router.MethodFunc("GET", "/articles/{id}", a.getArticlesHandler)
 	a.Router.MethodFunc("GET", "/tags/{tagName}/{date}", a.getTagHandler)
 	a.AppLogger.Infoln("routes added!")
 }

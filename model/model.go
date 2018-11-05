@@ -6,12 +6,19 @@ import (
 )
 
 type Article struct {
-	Id        string
-	Title     string
-	Date      string
-	Body      string
-	Tags      []string
-	ArticleId string
+	Id        string   `json:"id"`
+	Title     string   `json:"title"`
+	Date      string   `json:"date"`
+	Body      string   `json:"body"`
+	Tags      []string `json:"tags"`
+	ArticleId string   `json:"-"`
+}
+
+type TagResponse struct {
+	Tag          string   `json:"tag"`
+	Count        int      `json:"count"`
+	Articles     []string `json:"articles"`
+	Related_tags []string `json:"related_tags"`
 }
 
 // ArticleModel ...
@@ -27,13 +34,23 @@ type ArticleModel struct {
 // ArticleModelIndex ...
 func ArticleModelIndex() mgo.Index {
 	return mgo.Index{
-		Key:        []string{"ArticleId"},
+		Key:        []string{"articleid"},
 		Unique:     true,
 		DropDups:   true,
 		Background: true,
 		Sparse:     true,
 	}
 }
+
+// func ArticleModelTagsIndex() mgo.Index {
+// 	return mgo.Index{
+// 		Key:        []string{"tags"},
+// 		Unique:     true,
+// 		DropDups:   true,
+// 		Background: true,
+// 		Sparse:     true,
+// 	}
+// }
 
 // NewArticleModel ...
 func NewArticleModel(u *Article) (*ArticleModel, error) {

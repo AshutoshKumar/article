@@ -1,0 +1,241 @@
+swagger: '2.0'
+info:
+  title: articles-v1
+  description: >-
+   An API which allow to create an Article, with list of fields liks (title, date, body and tags)
+    and we can fetch the articles  based on article ID and tags.
+  version: 1.0.0
+host: localhost:8001
+schemes:
+  - http
+produces:
+  - application/json
+paths:
+  /articles:
+    post:
+      summary: Create Artcile
+      description: Creates a new Article in the article collection
+      tags:
+        - artciles
+      parameters:
+        - name: accept
+          in: header
+          description: application/json
+          type: string
+        - name: content-type
+          in: header
+          description: application/json
+          type: string
+        - name: employee
+          in: body
+          description: Fields below are accepted for employee creation
+          required: true
+          schema:
+            $ref: '#/definitions/create_article'
+      responses:
+        '201':
+          description: Successful response
+          schema:
+            $ref: '#/definitions/articledetails'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error_code_400'
+        '405':
+          description: Method Not Allowed
+          schema:
+            $ref: '#/definitions/Error405'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error_code_500'
+        '503':
+          description: Service Unavailable
+          schema:
+            $ref: '#/definitions/Error503'
+  '/artciles/{id}':
+    get:
+      summary: 'id,title,date, body and  tags info lookup by article id.'
+      description: 'Returns the id,title,date, body and  tags info for a specified article id.'
+      tags:
+        - artcile
+      parameters:
+        - name: id
+          description: >-
+            article id of the artcile that the user is looking for
+            information.
+          in: path
+          type: string
+          required: true
+        - name: accept
+          in: header
+          description: application/json
+          required: true
+          type: string
+      responses:
+        '200':
+          description: 'id,title,date, body and  tags info related to the specified artcile id'
+          schema:
+            $ref: '#/definitions/articledetails'
+        '404':
+          description: article id not found.
+          schema:
+            $ref: '#/definitions/error_code_404'
+        '500':
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_code_500'
+  '/tags/{tagName}/{date}':
+    get:
+      summary: 'id,title,date, body and  tags info lookup by article id.'
+      description: 'Returns the id,title,date, body and  tags info for a specified article id.'
+      tags:
+        - tags
+      parameters:
+        - name: tagName
+          description: >-
+            tag name of the artcile that the user is looking for
+            information.
+          in: path
+          type: string
+          required: true
+        - name: date
+          description: >-
+            date of the article that the user is looking for
+            information.
+          in: path
+          type: string
+          required: true
+        - name: accept
+          in: header
+          description: application/json
+          type: string
+      responses:
+        '200':
+          description: 'id,title,date, body and  tags info related to the specified artcile id'
+          schema:
+            $ref: '#/definitions/tagdetails'
+        '404':
+          description: article id not found.
+          schema:
+            $ref: '#/definitions/error_code_404'
+        '500':
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/error_code_500'
+definitions:
+  articledetails:
+    type: object
+    description: A article object
+    properties:
+      id:
+        type: string
+        description: Unique identifier for a article
+        example: 1
+      title:
+        type: string
+        description: title of the article
+        example: latest science shows that potato chips are better for you than sugar
+      date:
+        type: string
+        description: created data
+        example: 2016-09-22
+      body:
+        type: string
+        description: description of the article
+        example: some text, potentially containing simple markup about how potato chips are great
+      tags:
+        type: array
+        items:
+          type: string
+          example: ['health', 'fitness', 'science']
+  tagdetails:
+    type: object
+    description: A article object
+    properties:
+      tag:
+        type: string
+        description: name of the passed tag
+        example: health
+      count:
+        type: string
+        description: total number of article for passed date in the request
+        example: 10
+      articles:
+        type: array
+        items:
+          type: string
+          description: related articles id
+          example: [1, 2]
+      related_tags:
+        type: array
+        items:
+          type: string
+          description: related articles name
+          example: ['science', 'fitness']
+      tags:
+        type: array
+        items:
+          type: string
+          example: ['health', 'fitness', 'science']
+  create_article:
+    type: object
+    description: To create an article, this should be unique
+    properties:
+      id:
+        type: string
+        description: The id of the article
+        example: 1
+      title:
+        type: string
+        description: title of the article
+        example: latest science shows that potato chips are better for you than sugar
+      date:
+        type: string
+        description: current data
+        example: 2016-09-22
+      body:
+        type: string
+        description: description of the article
+        example: some text, potentially containing simple markup about how potato chips are great
+      tags:
+        type: array
+        items:
+          type: string
+          example: ['health', 'fitness', 'science']
+  error_code_400:
+    properties:
+      message:
+        type: string
+        description: >-
+          Message when the server was unable to process the request sent by the
+          client due to invalid syntax.
+        example: Bad Request.
+  error_code_404:
+    properties:
+      message:
+        type: string
+        description: Message when the resource does not exist.
+        example: Not found.
+  Error405:
+    type: object
+    properties:
+      message:
+        type: string
+        description: Request made with incorrect method e.g. POST when only GET is allowed
+        example: Method Not Allowed
+  error_code_500:
+    properties:
+      message:
+        type: string
+        description: >-
+          Message when the server encountered an unexpected error, preventing it
+          from fulfilling the request.
+        example: Internal server error.
+  Error503:
+    type: object
+    properties:
+      message:
+        type: string
+        description: Servers are offline for maintenance or went down under load
+        example: Service Unavailable
