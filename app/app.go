@@ -3,7 +3,6 @@ package app
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -25,59 +24,65 @@ type App struct {
 	articleService *mongo.ArticleService
 }
 
-//Create Articles
+// This function we be get used to create an article
 func (a *App) createArticle(w http.ResponseWriter, r *http.Request) {
 	// initalize variables to check throughout request
-	a.AppLogger.Infoln("In create Article")
+	a.AppLogger.Debugln("[app] >>[createArticle]")
 
 	article, err := validateArticleRequest(r)
 	if err != nil {
-		log.Infoln("[CreateArticle] >> [CreateArticleEndpoint] Request validation failed" + err.Error())
+		a.AppLogger.Warnln("[app] >>[createArticle] > Failed to validate request")
 
 		//Return Error from here
-		util.Error(w, http.StatusInternalServerError, err.Error())
+		util.Error(w, http.StatusBadRequest, err.Error())
 	}
 
 	articleRes := a.articleService.CreateArticle(&article)
 
 	if articleRes != nil {
-		util.Error(w, http.StatusInternalServerError, articleRes.Error())
+		a.AppLogger.Warnln("[app] >>[CreateArticle] > Failed to create an article" + articleRes.Error())
+
+		util.Error(w, http.StatusBadRequest, articleRes.Error())
 		return
 	}
+	a.AppLogger.Infoln("Article created Successfully")
 
-	util.Json(w, http.StatusOK, articleRes)
+	util.Json(w, http.StatusOK, "created")
 }
 
+//This function will be get used to validate the request body for create an article
 func validateArticleRequest(r *http.Request) (model.Article, error) {
-	log.Infoln("[CreateArticle] >> [validateArticleRequest] ")
+	log.Infoln("[app] >> [validateArticleRequest]")
 
 	var article model.Article
 	defer r.Body.Close()
 
 	if err := json.NewDecoder(r.Body).Decode(&article); err != nil {
-		log.Warnf("[CreateArticle] >>[validateArticleRequest] > Failed to decode the body ")
+		log.Warnf("[app] >>[validateArticleRequest] > Failed to decode the body ")
 
 		return model.Article{}, err
 	}
+
 	//No Error,lets validate all the fields
 
 	//Is Id blank ??
 	if article.Id == "" {
-		log.Warnf("[CreateArticle] >>[validateArticleRequest] > Id is blank this is required field to create an Article")
+		log.Warnf("[app] >>[validateArticleRequest] > Id is blank this is required field to create an Article")
 
 		return model.Article{}, errors.New("[Article Id field is required to create an Article]")
 	}
 
 	//Validate for Title, Data, Body fields
 	if article.Title == "" || article.Date == "" || article.Body == "" {
-		log.Warnf("[CreateArticle] >>[validateArticleRequest] > Title|Data|Body fields are blank")
+		log.Warnf("[app] >>[validateArticleRequest] > Title|Data|Body fields are blank")
 
 		return model.Article{}, errors.New("[Title|Date|body fields are blank]")
 	}
 
+	//Todo we should handle date check properly like @Ashutosh
 	//Validation for tags field
 	if len(article.Tags) == 0 {
-		log.Warnf("[CreateArticle] >>[validateArticleRequest] > Tag field is blank ")
+		log.Warnf("[app] >>[validateArticleRequest] > Tag field is blank ")
 
 		return model.Article{}, errors.New("[Tag field is required to create an record")
 	}
@@ -85,31 +90,52 @@ func validateArticleRequest(r *http.Request) (model.Article, error) {
 	return article, nil
 }
 
+//This fucntion will be get used to get Article based on the passed article id
 func (a *App) getArticlesHandler(w http.ResponseWriter, r *http.Request) {
+	a.AppLogger.Debugln("[app] >>[getArticlesHandler]")
+
+	//get id from the request url
 	articleID := chi.URLParam(r, "id")
+
 	articles, err := a.articleService.GetArticleById(articleID)
 
 	if err != nil {
+		a.AppLogger.Warnln("[app] >>[getArticlesHandler] > failed to fetch article" + err.Error())
+
 		util.Error(w, http.StatusNotFound, err.Error())
 		return
 	}
+	a.AppLogger.Infoln("Article available for passed article id" + articleID)
 
 	util.Json(w, http.StatusOK, articles)
 }
 
 func (a *App) getTagHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Print("REached here")
+	a.AppLogger.Debugln("[app] >>[getTagHandler]")
 
+	//Extract TagName and date from the request url
 	tagName := chi.URLParam(r, "tagName")
 	date := chi.URLParam(r, "date")
+
+	//Tagname and data ??
+	if tagName == "" || date == "" {
+		a.AppLogger.Warnln("[app] >>[getTagHandler] > tagname|date field are blank")
+
+		util.Error(w, http.StatusBadRequest, "tagname or date are blank")
+		return
+	}
+
 	date = date[0:4] + "-" + date[4:6] + "-" + date[6:]
 	articles, err := a.articleService.GetArticleByTagName(tagName, date)
 
 	if err != nil {
+		a.AppLogger.Warnln("[app] >>[getTagHandler] > failed to fetch article based on passed tag and date field")
+
 		util.Error(w, http.StatusNotFound, err.Error())
 		return
 	}
 
+	a.AppLogger.Infoln("Article available for passed tagname and date" + "tagname" + tagName + "date" + date)
 	util.Json(w, http.StatusOK, articles)
 }
 
@@ -145,7 +171,7 @@ func (a *App) Initialize() {
 
 //InitializeRoutes assigns handlers for app methods
 func (a *App) InitializeRoutes() {
-	a.AppLogger.Infoln("adding routes...")
+	a.AppLogger.Infoln("[app] >> [InitializeRoutes] > adding routes...")
 
 	a.Router.HandleFunc("/articles", a.createArticle)
 	a.Router.MethodFunc("GET", "/articles/{id}", a.getArticlesHandler)
@@ -155,20 +181,22 @@ func (a *App) InitializeRoutes() {
 
 // Run ...
 func (a *App) Run() {
-	fmt.Println("Run")
+	a.AppLogger.Debugln("[app] >> [Run]")
 	defer a.session.Close()
 	a.Start()
 }
 
 // Start ...
 func (a *App) Start() {
+	a.AppLogger.Debugln("[app] >> [Start]")
+
 	// start server
 	a.RunApp(a.Config.Server.Port)
 }
 
 //RunApp ...
 func (a *App) RunApp(add string) {
-	a.AppLogger.Infoln("starting web server")
+	a.AppLogger.Infoln("[app] >> [RunApp] > starting web server")
 	// create and run basic http server
 	httpServer := &http.Server{
 		Addr:              add,
