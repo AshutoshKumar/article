@@ -3,6 +3,7 @@ package mongo
 import (
 	"github.com/article/config"
 	"github.com/article/model"
+	"github.com/article/util"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -47,36 +48,10 @@ func (p *ArticleService) GetArticleByTagName(tag string, date string) (model.Tag
 
 	//TODO we can move this to some util
 	for _, connect := range connects {
-		index := getIndex(connect.Tags, tag)
+		index := util.GetIndex(connect.Tags, tag)
 		massagedData.Articles = append(massagedData.Articles, connect.ArticleId)
 		connect.Tags = append(connect.Tags[:index], connect.Tags[index+1:]...)
-		massagedData.Related_tags = RemoveDuplicatesFromSlice(append(massagedData.Related_tags, connect.Tags...))
+		massagedData.Related_tags = util.RemoveDuplicatesFromSlice(append(massagedData.Related_tags, connect.Tags...))
 	}
 	return massagedData, err
-}
-
-func getIndex(tags []string, key string) int {
-	for index, value := range tags {
-		if value == key {
-			return index
-		}
-	}
-	return -1
-}
-
-func RemoveDuplicatesFromSlice(s []string) []string {
-	m := make(map[string]bool)
-	for _, item := range s {
-		if _, ok := m[item]; ok {
-			// duplicate item
-		} else {
-			m[item] = true
-		}
-	}
-
-	var result []string
-	for item, _ := range m {
-		result = append(result, item)
-	}
-	return result
 }
